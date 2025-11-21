@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,6 @@ const Navigation = () => {
                 <button
                     className="md:hidden z-50"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    aria-label="Toggle menu"
                 >
                     {isMobileMenuOpen ? (
                         <X className={`w-6 h-6 ${hasSolidBg ? "text-foreground" : "text-white"}`} />
@@ -81,7 +80,7 @@ const Navigation = () => {
                         <Menu className={`w-6 h-6 ${hasSolidBg ? "text-foreground" : "text-white"}`} />
                     )}
                 </button>
-
+            
                 {/* Mobile Menu */}
                 {isMobileMenuOpen && (
                     <div className="fixed inset-0 bg-background z-40 flex flex-col items-center justify-center gap-8 animate-fade-up">
@@ -103,8 +102,16 @@ const Navigation = () => {
                     </div>
                 )}
             </div>
+
+
+
+            <div>
+                <h2 className="text-2xl font-bold fle"></h2>
+            </div>
         </nav>
     );
 };
+
+
 
 export default Navigation;
