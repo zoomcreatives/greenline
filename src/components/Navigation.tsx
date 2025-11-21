@@ -1,86 +1,110 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Leaf } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const location = useLocation();
 
-  const navLinks = [
-    { path: "/", label: "Home" },
-    { path: "/about", label: "About" },
-    { path: "/services", label: "Services" },
-    { path: "/sustainability", label: "Sustainability" },
-    { path: "/contact", label: "Contact" },
-  ];
+    // Check if we're on the home page
+    const isHomePage = location.pathname === "/";
 
-  const isActive = (path: string) => location.pathname === path;
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-soft">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center transition-transform group-hover:scale-110">
-              <Leaf className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold text-foreground">Greenline</span>
-          </Link>
+    const navLinks = [
+        { name: "Home", path: "/" },
+        { name: "Services", path: "/services" },
+        { name: "About", path: "/about" },
+        { name: "Sustainability", path: "/sustainability" },
+    ];
 
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-primary relative ${
-                  isActive(link.path) ? "text-primary" : "text-foreground"
+    // Determine if navbar should have solid background
+    const hasSolidBg = !isHomePage || isScrolled;
+
+    return (
+        <nav
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${hasSolidBg ? "bg-white/90 backdrop-blur-md border-b border-border/50 py-4" : "bg-transparent py-6"
                 }`}
-              >
-                {link.label}
-                {isActive(link.path) && (
-                  <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-primary" />
+        >
+            <div className="container-wide flex items-center justify-between">
+                <Link to="/" className="flex items-center gap-2 z-50">
+                    <span className={`text-2xl font-semibold tracking-tighter ${hasSolidBg ? "text-foreground" : "text-white"}`}>
+                        greenline.
+                    </span>
+                </Link>
+
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center gap-10">
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.path}
+                            to={link.path}
+                            className={`text-sm font-medium transition-colors ${hasSolidBg ? "hover:text-primary" : "hover:text-white hover:opacity-100"
+                                } ${location.pathname === link.path
+                                    ? hasSolidBg ? "text-primary" : "text-white font-bold"
+                                    : hasSolidBg
+                                        ? "text-foreground/80"
+                                        : "text-white/80"
+                                }`}
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
+                    <Button
+                        asChild
+                        variant={hasSolidBg ? "default" : "secondary"}
+                        className="rounded-none px-6 font-medium"
+                    >
+                        <Link to="/contact">
+                            Get a Quote
+                        </Link>
+                    </Button>
+                </div>
+
+                {/* Mobile Menu Toggle */}
+                <button
+                    className="md:hidden z-50"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    aria-label="Toggle menu"
+                >
+                    {isMobileMenuOpen ? (
+                        <X className={`w-6 h-6 ${hasSolidBg ? "text-foreground" : "text-white"}`} />
+                    ) : (
+                        <Menu className={`w-6 h-6 ${hasSolidBg ? "text-foreground" : "text-white"}`} />
+                    )}
+                </button>
+
+                {/* Mobile Menu */}
+                {isMobileMenuOpen && (
+                    <div className="fixed inset-0 bg-background z-40 flex flex-col items-center justify-center gap-8 animate-fade-up">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.path}
+                                to={link.path}
+                                className="text-3xl font-light text-foreground hover:text-primary transition-colors"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                        <Button asChild size="lg" className="rounded-none mt-4 px-8">
+                            <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                                Get a Quote
+                            </Link>
+                        </Button>
+                    </div>
                 )}
-              </Link>
-            ))}
-            <Button asChild size="sm" className="bg-primary hover:bg-accent">
-              <Link to="/contact">Get a Quote</Link>
-            </Button>
-          </div>
-
-          <button
-            className="md:hidden text-foreground"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {isOpen && (
-          <div className="md:hidden py-4 space-y-4 animate-fade-in">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block py-2 text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(link.path) ? "text-primary" : "text-foreground"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <Button asChild className="w-full bg-primary hover:bg-accent">
-              <Link to="/contact" onClick={() => setIsOpen(false)}>
-                Get a Quote
-              </Link>
-            </Button>
-          </div>
-        )}
-      </div>
-    </nav>
-  );
+            </div>
+        </nav>
+    );
 };
 
 export default Navigation;
